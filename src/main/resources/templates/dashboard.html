@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Meu Dashboard</title>
+</head>
+<body>
+    <h1>Minhas Rotinas</h1>
+    <ul>
+        <li th:each="rotina : ${rotinas}">
+            <strong th:text="${rotina.nome}"></strong> —
+            Streak: <span th:text="${rotina.streakAtual}"></span> dias
+            (Nível <span th:text="${rotina.nivel}"></span>)
+        </li>
+    </ul>
+
+    <h1>Meus Estudos</h1>
+    <ul>
+        <li th:each="estudo : ${estudos}">
+            <strong th:text="${estudo.materia}"></strong> —
+            Status: <span th:text="${estudo.status}"></span>
+        </li>
+    </ul>
+</body>
+</html>
