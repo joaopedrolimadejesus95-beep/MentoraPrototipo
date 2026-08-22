@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Editar Estudo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <h1>Editar Estudo</h1>
+
+    <form class="form-card" th:action="@{/editar-estudo/{id}(id=${estudo.idEstudo})}" method="post">
+        <div class="field">
+            <label>Matéria</label>
+            <input type="text" name="materia" th:value="${estudo.materia}" required>
+        </div>
+
+        <div class="field">
+            <label>Status</label>
+            <select name="status">
+                <option value="PENDENTE" th:selected="${estudo.status == 'PENDENTE'}">Pendente</option>
+                <option value="EM_ANDAMENTO" th:selected="${estudo.status == 'EM_ANDAMENTO'}">Em andamento</option>
+                <option value="CONCLUIDO" th:selected="${estudo.status == 'CONCLUIDO'}">Concluído</option>
+            </select>
+        </div>
+
+        <button type="submit">Salvar</button>
+        <a class="btn btn-outline" th:href="@{/dashboard}">Cancelar</a>
+    </form>
+</div>
+</body>
+</html>

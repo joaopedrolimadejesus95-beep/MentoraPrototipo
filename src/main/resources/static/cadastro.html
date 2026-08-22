@@ -2,24 +2,37 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cadastro de Usuário</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+<div class="container">
     <h1>Cadastro de Usuário</h1>
-    <form method="post" action="/cadastrar">
-        <label>Nome:</label>
-        <input type="text" name="nome" required><br>
 
-        <label>Email:</label>
-        <input type="email" name="email" required><br>
+    <form class="form-card" method="post" action="/cadastrar">
+        <div class="field">
+            <label>Nome</label>
+            <input type="text" name="nome" required>
+        </div>
 
-        <label>Número:</label>
-        <input type="number" name="numero" required><br>
+        <div class="field">
+            <label>Email</label>
+            <input type="email" name="email" required>
+        </div>
 
-        <label>Senha:</label>
-        <input type="password" name="senha" required><br>
+        <div class="field">
+            <label>Número</label>
+            <input type="number" name="numero" required>
+        </div>
+
+        <div class="field">
+            <label>Senha</label>
+            <input type="password" name="senha" required>
+        </div>
 
         <button type="submit">Cadastrar</button>
     </form>
+</div>
 </body>
 </html>

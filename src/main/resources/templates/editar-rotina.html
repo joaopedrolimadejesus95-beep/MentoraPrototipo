@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Editar Rotina</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <h1>Editar Rotina</h1>
+
+    <form class="form-card" th:action="@{/editar-rotina/{id}(id=${rotina.idRotina})}" method="post">
+        <div class="field">
+            <label>Nome</label>
+            <input type="text" name="nome" th:value="${rotina.nome}" required>
+        </div>
+
+        <div class="field">
+            <label>Descrição</label>
+            <input type="text" name="descricao" th:value="${rotina.descricao}">
+        </div>
+
+        <div class="field">
+            <label>Frequência</label>
+            <select name="frequencia">
+                <option value="DIARIA" th:selected="${rotina.frequencia == 'DIARIA'}">Diária</option>
+                <option value="SEMANAL" th:selected="${rotina.frequencia == 'SEMANAL'}">Semanal</option>
+            </select>
+        </div>
+
+        <div class="field checkbox-row">
+            <input type="checkbox" name="obrigatorio" id="obrigatorio" th:checked="${rotina.obrigatorio}">
+            <label for="obrigatorio">Obrigatório (conta pro streak)</label>
+        </div>
+
+        <button type="submit">Salvar</button>
+        <a class="btn btn-outline" th:href="@{/dashboard}">Cancelar</a>
+    </form>
+</div>
+</body>
+</html>

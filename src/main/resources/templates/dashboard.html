@@ -2,24 +2,89 @@
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Meu Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-    <h1>Minhas Rotinas</h1>
-    <ul>
-        <li th:each="rotina : ${rotinas}">
-            <strong th:text="${rotina.nome}"></strong> —
-            Streak: <span th:text="${rotina.streakAtual}"></span> dias
-            (Nível <span th:text="${rotina.nivel}"></span>)
-        </li>
-    </ul>
+<div class="container">
 
-    <h1>Meus Estudos</h1>
-    <ul>
-        <li th:each="estudo : ${estudos}">
-            <strong th:text="${estudo.materia}"></strong> —
-            Status: <span th:text="${estudo.status}"></span>
-        </li>
-    </ul>
+    <div class="topbar">
+        <h1>Meu Dashboard</h1>
+        <div class="nav-links">
+            <a th:href="@{/cadastro-rotina.html}">+ Rotina</a>
+            <a th:href="@{/cadastro-estudo.html}">+ Estudo</a>
+        </div>
+    </div>
+
+    <h2 class="section-title">Minhas Rotinas</h2>
+
+    <div th:if="${#lists.isEmpty(rotinas)}" class="empty-state">
+        Nenhuma rotina cadastrada ainda.
+    </div>
+
+    <div class="card" th:each="rotina : ${rotinas}">
+        <div class="card-header">
+            <div>
+                <p class="card-title" th:text="${rotina.nome}"></p>
+                <p class="meta" th:text="${rotina.descricao}"></p>
+            </div>
+            <span class="badge" th:text="${rotina.frequencia}"></span>
+        </div>
+
+        <div class="streak-row">
+            <span class="streak-flame">🔥 <span th:text="${rotina.streakAtual}"></span> dias</span>
+            <span>· recorde <span th:text="${rotina.melhorStreak}"></span></span>
+            <span>· nível <span th:text="${rotina.nivel}"></span></span>
+        </div>
+
+        <div class="progress-track">
+            <div class="progress-fill"
+                 th:style="'width:' + ${rotina.xpParaProximoNivel > 0 ? (rotina.xpAtual * 100 / rotina.xpParaProximoNivel) : 0} + '%'">
+            </div>
+        </div>
+
+        <div class="card-footer card-actions">
+            <form th:action="@{/marcar-cumprido/{id}(id=${rotina.idRotina})}" method="post" class="inline-form">
+                <button type="submit">Marcar como cumprido hoje</button>
+            </form>
+            <a class="btn btn-outline" th:href="@{/editar-rotina/{id}(id=${rotina.idRotina})}">Editar</a>
+            <form th:action="@{/deletar-rotina/{id}(id=${rotina.idRotina})}" method="post" class="inline-form"
+                  onsubmit="return confirm('Apagar esta rotina?');">
+                <button type="submit" class="btn-outline">Excluir</button>
+            </form>
+        </div>
+    </div>
+
+    <h2 class="section-title">Meus Estudos</h2>
+
+    <div th:if="${#lists.isEmpty(estudos)}" class="empty-state">
+        Nenhum estudo cadastrado ainda.
+    </div>
+
+    <div class="card" th:each="estudo : ${estudos}">
+        <div class="card-header">
+            <p class="card-title" th:text="${estudo.materia}"></p>
+            <span class="badge" th:classappend="'status-' + ${estudo.status}" th:text="${estudo.status}"></span>
+        </div>
+
+        <div class="streak-row">
+            <span class="streak-flame">🔥 <span th:text="${estudo.streakAtual}"></span> dias</span>
+            <span>· recorde <span th:text="${estudo.melhorStreak}"></span></span>
+        </div>
+
+        <div class="card-footer card-actions">
+            <form th:action="@{/marcar-estudado/{id}(id=${estudo.idEstudo})}" method="post" class="inline-form">
+                <button type="submit">Marquei que estudei hoje</button>
+            </form>
+            <a class="btn btn-outline" th:href="@{/editar-estudo/{id}(id=${estudo.idEstudo})}">Editar</a>
+            <form th:action="@{/deletar-estudo/{id}(id=${estudo.idEstudo})}" method="post" class="inline-form"
+                  onsubmit="return confirm('Apagar este estudo?');">
+                <button type="submit" class="btn-outline">Excluir</button>
+            </form>
+        </div>
+    </div>
+
+</div>
 </body>
 </html>

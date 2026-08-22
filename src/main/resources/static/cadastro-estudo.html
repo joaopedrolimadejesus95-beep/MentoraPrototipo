@@ -2,22 +2,31 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cadastro de Estudo</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+<div class="container">
     <h1>Cadastro de Estudo</h1>
-    <form method="post" action="/cadastrar-estudo">
-        <label>Matéria:</label>
-        <input type="text" name="materia" required><br>
 
-        <label>Status:</label>
-        <select name="status">
-            <option value="PENDENTE">Pendente</option>
-            <option value="EM_ANDAMENTO">Em andamento</option>
-            <option value="CONCLUIDO">Concluído</option>
-        </select><br>
+    <form class="form-card" method="post" action="/cadastrar-estudo">
+        <div class="field">
+            <label>Matéria</label>
+            <input type="text" name="materia" required>
+        </div>
+
+        <div class="field">
+            <label>Status</label>
+            <select name="status">
+                <option value="PENDENTE">Pendente</option>
+                <option value="EM_ANDAMENTO">Em andamento</option>
+                <option value="CONCLUIDO">Concluído</option>
+            </select>
+        </div>
 
         <button type="submit">Cadastrar</button>
     </form>
+</div>
 </body>
 </html>

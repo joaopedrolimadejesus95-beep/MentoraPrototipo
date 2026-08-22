@@ -6,7 +6,14 @@ public class Estudo {
     private int idEstudo;
     private String materia;        // ex: "Estrutura de Dados"
     private LocalDate dataCriacao;
-    private String status;         // "EM_ANDAMENTO", "CONCLUIDO"
+    private String status;  
+    private int streakAtual;
+    private int melhorStreak;
+
+    public int getStreakAtual() { return streakAtual; }
+    public void setStreakAtual(int streakAtual) { this.streakAtual = streakAtual; }
+    public int getMelhorStreak() { return melhorStreak; }
+    public void setMelhorStreak(int melhorStreak) { this.melhorStreak = melhorStreak; }       // "EM_ANDAMENTO", "CONCLUIDO"
 
 
     public int getIdEstudo() {

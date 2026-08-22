@@ -2,27 +2,40 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cadastro de Rotina</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+<div class="container">
     <h1>Cadastro de Rotina</h1>
-    <form method="post" action="/cadastrar-rotina">
-        <label>Nome:</label>
-        <input type="text" name="nome" required><br>
 
-        <label>Descrição:</label>
-        <input type="text" name="descricao"><br>
+    <form class="form-card" method="post" action="/cadastrar-rotina">
+        <div class="field">
+            <label>Nome</label>
+            <input type="text" name="nome" required>
+        </div>
 
-        <label>Frequência:</label>
-        <select name="frequencia">
-            <option value="DIARIA">Diária</option>
-            <option value="SEMANAL">Semanal</option>
-        </select><br>
+        <div class="field">
+            <label>Descrição</label>
+            <input type="text" name="descricao">
+        </div>
 
-        <label>Obrigatório (conta pro streak):</label>
-        <input type="checkbox" name="obrigatorio"><br>
+        <div class="field">
+            <label>Frequência</label>
+            <select name="frequencia">
+                <option value="DIARIA">Diária</option>
+                <option value="SEMANAL">Semanal</option>
+            </select>
+        </div>
+
+        <div class="field checkbox-row">
+            <input type="checkbox" name="obrigatorio" id="obrigatorio">
+            <label for="obrigatorio">Obrigatório (conta pro streak)</label>
+        </div>
 
         <button type="submit">Cadastrar</button>
     </form>
+</div>
 </body>
 </html>
