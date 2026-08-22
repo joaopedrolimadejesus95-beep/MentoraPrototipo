@@ -103,3 +103,52 @@ src/main/resources/
 - Autenticação/login de fato (hoje o cadastro de usuário existe, mas as demais telas não exigem login).
 - Integração com IA para resumir conteúdos de estudo.
 - Testes automatizados.
+
+- -- Script completo de criação das tabelas do App Rotina
+-- Rode no seu banco PostgreSQL antes de iniciar a aplicação
+
+CREATE TABLE IF NOT EXISTS usuarios (
+    id_usuario SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    numero INTEGER,
+    senha VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS rotinas (
+    idRotina SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    descricao VARCHAR(255),
+    frequencia VARCHAR(20),
+    dataDeCriacao DATE,
+    obrigatorio BOOLEAN DEFAULT false,
+    streakAtual INTEGER DEFAULT 0,
+    melhorStreak INTEGER DEFAULT 0,
+    nivel INTEGER DEFAULT 1,
+    xpAtual INTEGER DEFAULT 0,
+    xpParaProximoNivel INTEGER DEFAULT 100
+);
+
+CREATE TABLE IF NOT EXISTS registro_cumprimento (
+    idRegistro SERIAL PRIMARY KEY,
+    idRotina INTEGER NOT NULL REFERENCES rotinas(idRotina),
+    data DATE NOT NULL,
+    cumprido BOOLEAN DEFAULT true,
+    UNIQUE (idRotina, data)
+);
+
+CREATE TABLE IF NOT EXISTS estudo (
+    idEstudo SERIAL PRIMARY KEY,
+    materia VARCHAR(100) NOT NULL,
+    status VARCHAR(20),
+    dataCriacao DATE,
+    streakAtual INTEGER DEFAULT 0,
+    melhorStreak INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS registro_estudo_diario (
+    idRegistro SERIAL PRIMARY KEY,
+    idEstudo INTEGER NOT NULL REFERENCES estudo(idEstudo),
+    data DATE NOT NULL,
+    UNIQUE (idEstudo, data)
+);
