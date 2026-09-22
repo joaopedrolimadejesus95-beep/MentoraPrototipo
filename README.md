@@ -1,34 +1,48 @@
-# # App Rotina
+# App Rotina
 
-Aplicação web para controle de hábitos e estudos diários, com sistema de sequência (streak), níveis e XP para engajar o uso contínuo. Feita como projeto de portfólio.
+Aplicação web para controle de hábitos e estudos diários, com sequência de dias (streak), níveis e XP para incentivar o uso contínuo.
+
+O streak não é um contador solto: ele é calculado a partir do histórico real de cumprimento, com um registro por dia para cada rotina e cada estudo.
+
+![Dashboard do App Rotina](dash.png)
 
 ## Funcionalidades
 
-- **Cadastro de usuário** com validação de campos (nome, e-mail, senha).
-- **Cadastro de rotinas (hábitos)**: nome, descrição, frequência e se são obrigatórias ou não para manter o streak.
-- **Cadastro de estudos**: matéria e status (pendente, em andamento, concluído).
-- **Streak diário**: cada rotina e cada estudo tem uma sequência de dias consecutivos, calculada a partir de um histórico real de cumprimento (não apenas um contador solto).
-- **Hábitos não obrigatórios** não quebram o streak caso um dia seja pulado.
-- **Sistema de nível e XP** para as rotinas.
-- **Dashboard** central mostrando todas as rotinas e estudos, com opção de marcar como cumprido, editar ou excluir.
+- **Cadastro de usuário** com validação de nome, e-mail e senha
+- **Cadastro de rotinas (hábitos)** com nome, descrição, frequência e se são obrigatórias para manter o streak
+- **Cadastro de estudos** com matéria e status (pendente, em andamento, concluído)
+- **Streak diário** por rotina e por estudo, calculado a partir do histórico de cumprimento
+- **Hábitos não obrigatórios** não quebram o streak quando um dia é pulado
+- **Níveis e XP** para as rotinas
+- **Dashboard** com todas as rotinas e estudos, onde dá pra marcar como cumprido, editar ou excluir
 
 ## Tecnologias
 
 - Java 21
 - Spring Boot 3 (Web, Thymeleaf, Validation)
-- PostgreSQL (acesso via JDBC puro, sem ORM)
-- HTML + CSS
+- PostgreSQL, com acesso via JDBC puro (sem ORM)
+- HTML e CSS
 - Maven
 
 ## Arquitetura
 
-O projeto segue a divisão em camadas **Controller → Service → DAO**:
+O projeto é dividido em três camadas:
 
-- **Controller**: recebe as requisições HTTP e devolve a resposta (páginas ou redirects).
-- **Service**: concentra a lógica de negócio, como o cálculo do streak.
-- **DAO**: executa o SQL puro contra o banco de dados.
+```
+Controller  →  Service  →  DAO  →  PostgreSQL
+```
 
-## Como rodar o projeto
+- **Controller**: recebe as requisições HTTP e devolve páginas ou redirects
+- **Service**: concentra a regra de negócio, como o cálculo do streak e do XP
+- **DAO**: executa o SQL contra o banco usando `PreparedStatement`
+
+### Como o streak funciona
+
+Cada vez que uma rotina é marcada como cumprida, é gravada uma linha em `registro_cumprimento` com a data do dia. A restrição `UNIQUE (idRotina, data)` garante que só exista um registro por rotina por dia.
+
+O streak atual é calculado contando os dias consecutivos de cumprimento a partir de hoje, olhando para trás no histórico. O melhor streak fica salvo na própria rotina. Os estudos seguem a mesma lógica com a tabela `registro_estudo_diario`.
+
+## Como rodar
 
 ### Pré-requisitos
 
@@ -39,28 +53,44 @@ O projeto segue a divisão em camadas **Controller → Service → DAO**:
 ### 1. Clonar o repositório
 
 ```bash
-git clone <url-do-seu-repositorio>
-cd "App Rotina"
+git clone https://github.com/joaopedrolimadejesus95-beep/MentoraPrototipo.git
+cd MentoraPrototipo
 ```
 
-### 2. Criar o banco de dados
+### 2. Criar as tabelas
 
-Crie um banco chamado `postgres` (ou ajuste o nome no `ConnectionFactory.java`) e rode o script `schema.sql` que está na raiz do projeto — ele cria todas as tabelas necessárias:
+Rode o script `schema.sql` no seu banco:
 
 ```bash
 psql -U postgres -d postgres -f schema.sql
 ```
 
-Ou, se preferir, abra o `schema.sql` no DBeaver/pgAdmin e execute o script inteiro.
+Ou abra o arquivo no DBeaver ou pgAdmin e execute o script inteiro.
 
-### 3. Configurar a conexão
+### 3. Configurar a conexão com o banco
 
-Confira se as credenciais em `src/main/java/org/example/ConnectionFactory.java` batem com o seu banco local:
+As credenciais são lidas de variáveis de ambiente:
 
-```java
-private static final String URL = "jdbc:postgresql://localhost:5432/postgres";
-private static final String USUARIO = "postgres";
-private static final String SENHA = "sua_senha_aqui";
+| Variável      | Exemplo                                     |
+| ------------- | ------------------------------------------- |
+| `DB_URL`      | `jdbc:postgresql://localhost:5432/postgres` |
+| `DB_USER`     | `postgres`                                  |
+| `DB_PASSWORD` | a senha do seu PostgreSQL                   |
+
+No Linux ou macOS:
+
+```bash
+export DB_URL=jdbc:postgresql://localhost:5432/postgres
+export DB_USER=postgres
+export DB_PASSWORD=sua_senha
+```
+
+No Windows (PowerShell):
+
+```powershell
+$env:DB_URL="jdbc:postgresql://localhost:5432/postgres"
+$env:DB_USER="postgres"
+$env:DB_PASSWORD="sua_senha"
 ```
 
 ### 4. Rodar a aplicação
@@ -71,84 +101,41 @@ mvn spring-boot:run
 
 ### 5. Acessar
 
-Com o servidor rodando, abra no navegador:
-
-| Página | URL |
-|---|---|
-| Dashboard | http://localhost:8080/dashboard |
-| Cadastro de usuário | http://localhost:8080/cadastro.html |
-| Cadastro de rotina | http://localhost:8080/cadastro-rotina.html |
-| Cadastro de estudo | http://localhost:8080/cadastro-estudo.html |
+| Página              | URL                                          |
+| ------------------- | -------------------------------------------- |
+| Dashboard           | <http://localhost:8080/dashboard>            |
+| Cadastro de usuário | <http://localhost:8080/cadastro.html>        |
+| Cadastro de rotina  | <http://localhost:8080/cadastro-rotina.html> |
+| Cadastro de estudo  | <http://localhost:8080/cadastro-estudo.html> |
 
 ## Estrutura do projeto
 
 ```
 src/main/java/org/example/
-├── AppRotinaApplication.java   # ponto de entrada Spring Boot
-├── ConnectionFactory.java      # conexão com o PostgreSQL
-├── Rotina.java / RotinaDAO.java / RotinaController.java / RotinaService.java
-├── Estudo.java / EstudoDAO.java / EstudoController.java / EstudoService.java
-├── Usuario.java / UsuarioDAO.java / UsuarioController.java
-├── RegistroCumprimento.java / RegistroCumprimentoDAO.java
-├── RegistroEstudoDiarioDAO.java
-└── DashboardController.java
+├── AppRotinaApplication.java    # ponto de entrada do Spring Boot
+├── ConnectionFactory.java       # conexão com o PostgreSQL
+├── Rotina / RotinaDAO / RotinaController / RotinaService
+├── Estudo / EstudoDAO / EstudoController / EstudoService
+├── Usuario / UsuarioDAO / UsuarioController
+├── RegistroCumprimento / RegistroCumprimentoDAO
+├── RegistroEstudoDiarioDAO
+└── DashboardController
 
 src/main/resources/
-├── static/             # páginas de cadastro (HTML fixo) + CSS
-└── templates/          # dashboard e telas de edição (Thymeleaf)
+├── static/       # páginas de cadastro (HTML) e CSS
+└── templates/    # dashboard e telas de edição (Thymeleaf)
+
+schema.sql        # criação das tabelas
 ```
 
 ## Próximos passos
 
-- Autenticação/login de fato (hoje o cadastro de usuário existe, mas as demais telas não exigem login).
-- Integração com IA para resumir conteúdos de estudo.
-- Testes automatizados.
+- [ ] Login e autenticação
+- [ ] Vincular rotinas e estudos a cada usuário
+- [ ] Guardar senhas com hash (BCrypt)
+- [ ] Testes automatizados para o cálculo do streak
+- [ ] Integração com IA para resumir conteúdos de estudo
 
-- -- Script completo de criação das tabelas do App Rotina
--- Rode no seu banco PostgreSQL antes de iniciar a aplicação
+---
 
-CREATE TABLE IF NOT EXISTS usuarios (
-    id_usuario SERIAL PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    email VARCHAR(150) NOT NULL,
-    numero INTEGER,
-    senha VARCHAR(100) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS rotinas (
-    idRotina SERIAL PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    descricao VARCHAR(255),
-    frequencia VARCHAR(20),
-    dataDeCriacao DATE,
-    obrigatorio BOOLEAN DEFAULT false,
-    streakAtual INTEGER DEFAULT 0,
-    melhorStreak INTEGER DEFAULT 0,
-    nivel INTEGER DEFAULT 1,
-    xpAtual INTEGER DEFAULT 0,
-    xpParaProximoNivel INTEGER DEFAULT 100
-);
-
-CREATE TABLE IF NOT EXISTS registro_cumprimento (
-    idRegistro SERIAL PRIMARY KEY,
-    idRotina INTEGER NOT NULL REFERENCES rotinas(idRotina),
-    data DATE NOT NULL,
-    cumprido BOOLEAN DEFAULT true,
-    UNIQUE (idRotina, data)
-);
-
-CREATE TABLE IF NOT EXISTS estudo (
-    idEstudo SERIAL PRIMARY KEY,
-    materia VARCHAR(100) NOT NULL,
-    status VARCHAR(20),
-    dataCriacao DATE,
-    streakAtual INTEGER DEFAULT 0,
-    melhorStreak INTEGER DEFAULT 0
-);
-
-CREATE TABLE IF NOT EXISTS registro_estudo_diario (
-    idRegistro SERIAL PRIMARY KEY,
-    idEstudo INTEGER NOT NULL REFERENCES estudo(idEstudo),
-    data DATE NOT NULL,
-    UNIQUE (idEstudo, data)
-);
+Projeto feito para aprendizado e portfólio.
