@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hoje · Aurora</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<main class="container today-page">
+    <header class="topbar">
+        <div>
+            <p class="today-date" th:text="${dataFormatada}">Hoje</p>
+            <h1>Seu próximo passo</h1>
+        </div>
+        <nav class="nav-links"><a th:href="@{/dashboard}">Ver painel antigo</a></nav>
+    </header>
+
+    <div class="notice notice-success" th:if="${sucessoAcao}" th:text="${sucessoAcao}"></div>
+    <div class="notice notice-error" th:if="${erroAcao}" th:text="${erroAcao}"></div>
+    <div class="notice notice-error" th:if="${erroBanco}" th:text="${erroBanco}"></div>
+
+    <section class="next-action card">
+        <span class="eyebrow">PRÓXIMA AÇÃO</span>
+        <h2 th:if="${minutosDisponiveis == null}">Escolha um começo possível</h2>
+        <h2 th:if="${minutosDisponiveis != null}">Com <span th:text="${minutosDisponiveis}">30</span> min, esta é uma boa opção</h2>
+        <p class="meta" th:text="${sugestaoTempo}">Escolha uma ação para agora.</p>
+        <form class="time-form" method="get" th:action="@{/hoje}">
+            <label for="tempoLivre">Tenho este tempo agora</label>
+            <div class="time-controls">
+                <select id="tempoLivre" name="minutos">
+                    <option value="15" th:selected="${minutosDisponiveis == 15}">15 minutos</option>
+                    <option value="30" th:selected="${minutosDisponiveis == 30}">30 minutos</option>
+                    <option value="60" th:selected="${minutosDisponiveis == 60}">1 hora</option>
+                    <option value="90" th:selected="${minutosDisponiveis == 90}">1h30</option>
+                    <option value="120" th:selected="${minutosDisponiveis == 120}">2 horas</option>
+                </select>
+                <button type="submit" class="btn-outline">Ver o que cabe</button>
+            </div>
+        </form>
+    </section>
+
+    <section>
+        <h2 class="section-title">Rotina</h2>
+        <div th:if="${#lists.isEmpty(rotinas)}" class="empty-state">Ainda não há hábitos cadastrados. Você poderá adicioná-los pelo cadastro de rotina.</div>
+        <article class="card routine-row" th:each="rotina : ${rotinas}">
+            <div>
+                <p class="card-title" th:text="${rotina.nome}">Hábito</p>
+                <p class="meta" th:text="${rotina.descricao}"></p>
+            </div>
+            <form th:action="@{/marcar-cumprido/{id}(id=${rotina.idRotina})}" method="post">
+                <button type="submit">Feito</button>
+            </form>
+        </article>
+    </section>
+
+    <section>
+        <h2 class="section-title">Estudo</h2>
+        <article class="card">
+            <div class="card-header">
+                <div>
+                    <p class="card-title"><span th:text="${minutosEstudoHoje}">0</span> / <span th:text="${metaEstudoMin}">90</span> min hoje</p>
+                    <p class="meta"><span th:text="${sequenciaEstudo}">0</span> dias de sequência · conta a partir de <span th:text="${minimoEstudoMin}">15</span> minutos registrados.</p>
+                </div>
+            </div>
+            <div class="progress-track"><div class="progress-fill" th:style="'width:' + ${metaEstudoMin > 0 ? T(java.lang.Math).min(100, minutosEstudoHoje * 100 / metaEstudoMin) : 0} + '%' "></div></div>
+            <form class="quick-form" method="post" th:action="@{/hoje/estudo}">
+                <div class="field">
+                    <label for="area">Área</label>
+                    <select id="area" name="area" required>
+                        <option value="CARREIRA_DEV">Carreira dev</option>
+                        <option value="FACULDADE">Faculdade</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="duracaoMin">Duração em minutos</label>
+                    <input id="duracaoMin" name="duracaoMin" type="number" min="1" max="1440" placeholder="25" required>
+                </div>
+                <div class="field">
+                    <label for="assunto">O que estudou? <span class="optional">opcional</span></label>
+                    <input id="assunto" name="assunto" type="text" maxlength="160" placeholder="Ex.: listas encadeadas">
+                </div>
+                <button type="submit">Registrar estudo</button>
+            </form>
+        </article>
+    </section>
+
+    <section>
+        <h2 class="section-title">Treino</h2>
+        <article class="card">
+            <p class="meta">Nesta semana: <span th:text="${calisteniaSemana}">0</span>/3 calistenias · <span th:text="${corridaSemana}">0</span>/1 corrida. Séries e cargas são opcionais.</p>
+            <form class="quick-form" method="post" th:action="@{/hoje/treino}">
+                <div class="field">
+                    <label for="tipoTreino">Tipo de sessão</label>
+                    <select id="tipoTreino" name="tipo" required>
+                        <option value="CALISTENIA">Calistenia</option>
+                        <option value="CORRIDA">Corrida</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="exercicios">Exercícios (um por linha) <span class="optional">opcional</span></label>
+                    <textarea id="exercicios" name="exercicios" rows="3" maxlength="4000" placeholder="Flexões&#10;Barra fixa&#10;Agachamento"></textarea>
+                </div>
+                <div class="field">
+                    <label for="observacao">Observação <span class="optional">opcional</span></label>
+                    <input id="observacao" name="observacao" type="text" maxlength="1000" placeholder="Como foi a sessão?">
+                </div>
+                <label class="checkbox-row"><input type="checkbox" name="concluida" value="true" checked> <span>Concluí a sessão</span></label>
+                <button type="submit">Registrar treino</button>
+            </form>
+        </article>
+        <article class="card" th:each="treino : ${treinosHoje}">
+            <div class="card-header">
+                <div>
+                    <p class="card-title" th:text="${treino.tipo == 'CALISTENIA' ? 'Calistenia' : 'Corrida'}">Treino</p>
+                    <p class="meta" th:if="${treino.exercicios != null}" th:text="${treino.exercicios}"></p>
+                    <p class="meta" th:if="${treino.observacao != null}" th:text="${treino.observacao}"></p>
+                </div>
+                <span class="badge" th:text="${treino.concluida ? 'Concluída' : 'Interrompida'}">Status</span>
+            </div>
+        </article>
+    </section>
+
+    <section>
+        <h2 class="section-title">Aurora</h2>
+        <article class="card mentor-card">“Constância começa pelo que cabe hoje. Registre o que aconteceu; amanhã a gente ajusta.”</article>
+    </section>
+</main>
+</body>
+</html>
