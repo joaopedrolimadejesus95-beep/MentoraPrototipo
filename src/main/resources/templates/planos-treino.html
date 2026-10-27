@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Meus planos de treino · Aurora</title><link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body><main class="container today-page">
+    <header class="topbar"><div><p class="today-date">Treino</p><h1>Meus planos</h1></div><nav class="nav-links"><a th:href="@{/hoje}">Voltar para Hoje</a></nav></header>
+    <div class="notice notice-success" th:if="${sucessoAcao}" th:text="${sucessoAcao}"></div>
+    <div class="notice notice-error" th:if="${erroAcao}" th:text="${erroAcao}"></div>
+    <div class="notice notice-error" th:if="${erroBanco}" th:text="${erroBanco}"></div>
+    <section>
+        <h2 class="section-title">Criar um plano seu</h2>
+        <form class="card quick-form plan-form" method="post" th:action="@{/treinos/planos}">
+            <div class="field"><label for="nome">Nome do plano</label><input id="nome" name="nome" type="text" maxlength="80" placeholder="Ex.: Calistenia A" required></div>
+            <div class="field"><label for="tipo">Modalidade</label><select id="tipo" name="tipo"><option value="CALISTENIA">Calistenia</option><option value="CORRIDA">Corrida</option></select></div>
+            <div class="field"><label for="duracaoMin">Duração estimada (minutos)</label><input id="duracaoMin" name="duracaoMin" type="number" min="1" max="360" placeholder="45" required></div>
+            <div class="field plan-exercises"><label for="exercicios">Exercícios (um por linha)</label><textarea id="exercicios" name="exercicios" rows="5" maxlength="4000" placeholder="Flexões&#10;Barra fixa&#10;Agachamento" required></textarea><small class="meta">A duração ajuda o app a sugerir o plano quando você informar quanto tempo tem.</small></div>
+            <button type="submit">Salvar plano</button>
+        </form>
+    </section>
+    <section>
+        <h2 class="section-title">Planos ativos</h2>
+        <div th:if="${#lists.isEmpty(planos)}" class="empty-state">Você ainda não criou um plano.</div>
+        <article class="card" th:each="plano : ${planos}">
+            <div class="card-header"><div><p class="card-title" th:text="${plano.nome}">Plano</p><p class="meta"><span th:text="${plano.tipo == 'CALISTENIA' ? 'Calistenia' : 'Corrida'}">Modalidade</span> · <span th:text="${plano.duracaoEstimadaMin}">45</span> min estimados</p></div></div>
+            <ul class="plan-exercise-list"><li th:each="exercicio : ${plano.exercicios}" th:text="${exercicio.nome}">Exercício</li></ul>
+            <div class="card-actions"><a class="btn" th:href="@{/hoje(planoId=${plano.id})}">Usar na tela Hoje</a>
+                <form method="post" th:action="@{/treinos/planos/{id}/arquivar(id=${plano.id})}" onsubmit="return confirm('Arquivar este plano?');"><button type="submit" class="btn-outline">Arquivar</button></form></div>
+        </article>
+    </section>
+</main></body></html>

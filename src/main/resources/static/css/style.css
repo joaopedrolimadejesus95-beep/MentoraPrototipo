@@ -272,6 +272,23 @@ input:focus, select:focus {
 .notice-success { background: rgba(34,197,94,.12); color: var(--green); }
 .notice-error { background: rgba(248,113,113,.12); color: #fca5a5; }
 .mentor-card { border-left: 3px solid var(--purple); color: #dbeafe; }
+.reset-adjustment { margin-top: 10px; }
+.schedule-form { max-width: none; }
+.schedule-header, .schedule-row { display: grid; grid-template-columns: 100px 1fr 1fr; gap: 12px; align-items: center; }
+.schedule-header { color: var(--gray); font-size: .8rem; padding-bottom: 10px; }
+.schedule-row { border-top: 1px solid var(--border); padding: 12px 0; }
+.schedule-slot { display: flex; align-items: center; gap: 7px; }
+.schedule-slot input { min-width: 0; width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: #0D1224; color: var(--white); }
+.schedule-form > button { margin-top: 12px; }
+.exercise-field { grid-column: 1 / -1; }
+.exercise-entry { display: grid; grid-template-columns: minmax(140px, 2fr) repeat(3, minmax(78px, 1fr)) 38px; gap: 8px; margin-bottom: 8px; align-items: center; }
+.exercise-head { color: var(--gray); font-size: .76rem; }
+.exercise-entry .remove-exercise { padding: 8px; }
+.add-exercise { margin: 2px 0 14px; }
+.plan-picks { padding: 16px; }
+.plan-pick-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 10px; font-size: .9rem; }
+.plan-form .plan-exercises { grid-column: 1 / -1; }
+.plan-exercise-list { color: var(--gray); font-size: .88rem; margin: 12px 0; padding-left: 20px; }
 
 @media (max-width: 560px) {
   .container { padding: 24px 16px 56px; }
@@ -279,4 +296,9 @@ input:focus, select:focus {
   .time-controls { flex-direction: column; }
   .time-controls select { max-width: none; }
   .routine-row { align-items: flex-start; }
+  .schedule-header { display: none; }
+  .schedule-row { grid-template-columns: 1fr; gap: 7px; }
+  .exercise-head { display: none; }
+  .exercise-entry { grid-template-columns: 1fr 1fr; }
+  .exercise-entry input:first-child { grid-column: 1 / -1; }
 }

@@ -13,19 +13,21 @@
             <p class="today-date" th:text="${dataFormatada}">Hoje</p>
             <h1>Seu próximo passo</h1>
         </div>
-        <nav class="nav-links"><a th:href="@{/dashboard}">Ver painel antigo</a></nav>
+        <nav class="nav-links"><a th:href="@{/horarios}">Grade semanal</a><a th:href="@{/treinos/planos}">Planos de treino</a></nav>
     </header>
 
     <div class="notice notice-success" th:if="${sucessoAcao}" th:text="${sucessoAcao}"></div>
     <div class="notice notice-error" th:if="${erroAcao}" th:text="${erroAcao}"></div>
     <div class="notice notice-error" th:if="${erroBanco}" th:text="${erroBanco}"></div>
+    <div class="notice notice-error" th:if="${erroDisponibilidade}" th:text="${erroDisponibilidade}"></div>
+    <div class="notice notice-error" th:if="${erroPlanos}" th:text="${erroPlanos}"></div>
 
     <section class="next-action card">
         <span class="eyebrow">PRÓXIMA AÇÃO</span>
         <h2 th:if="${minutosDisponiveis == null}">Escolha um começo possível</h2>
         <h2 th:if="${minutosDisponiveis != null}">Com <span th:text="${minutosDisponiveis}">30</span> min, esta é uma boa opção</h2>
         <p class="meta" th:text="${sugestaoTempo}">Escolha uma ação para agora.</p>
-        <form class="time-form" method="get" th:action="@{/hoje}">
+        <form class="time-form" method="post" th:action="@{/hoje/ajuste}">
             <label for="tempoLivre">Tenho este tempo agora</label>
             <div class="time-controls">
                 <select id="tempoLivre" name="minutos">
@@ -35,9 +37,18 @@
                     <option value="90" th:selected="${minutosDisponiveis == 90}">1h30</option>
                     <option value="120" th:selected="${minutosDisponiveis == 120}">2 horas</option>
                 </select>
-                <button type="submit" class="btn-outline">Ver o que cabe</button>
+                <button type="submit" class="btn-outline">Ajustar hoje</button>
             </div>
         </form>
+        <form th:if="${minutosDisponiveis != null}" method="post" th:action="@{/hoje/ajuste/remover}" class="reset-adjustment">
+            <button type="submit" class="btn-outline">Usar novamente a grade semanal</button>
+        </form>
+        <div class="today-availability">
+            <p class="meta" th:if="${#lists.isEmpty(horariosHoje)}">Nenhum horário livre cadastrado para hoje. <a th:href="@{/horarios}">Configurar grade semanal</a></p>
+            <p class="meta" th:each="intervalo : ${horariosHoje}">
+                Livre hoje: <span th:text="${intervalo.inicio}">07:00</span>–<span th:text="${intervalo.fim}">11:30</span>
+            </p>
+        </div>
     </section>
 
     <section>
@@ -87,19 +98,56 @@
 
     <section>
         <h2 class="section-title">Treino</h2>
+        <div class="card plan-picks">
+            <div class="card-header"><div><p class="card-title">Planos que cabem hoje</p><p class="meta" th:if="${minutosDisponiveis != null}">Filtrados pelo tempo que você informou.</p><p class="meta" th:if="${minutosDisponiveis == null}">Informe seu tempo livre para filtrar por duração estimada.</p></div><a class="btn btn-outline" th:href="@{/treinos/planos}">Criar / gerenciar</a></div>
+            <p class="meta" th:if="${#lists.isEmpty(planosHoje)}">Nenhum plano ativo cabe neste intervalo. Você ainda pode registrar um treino livre abaixo.</p>
+            <div class="plan-pick-row" th:each="plano : ${planosHoje}">
+                <span><strong th:text="${plano.nome}">Plano</strong> · <span th:text="${plano.tipo == 'CALISTENIA' ? 'Calistenia' : 'Corrida'}">Tipo</span> · <span th:text="${plano.duracaoEstimadaMin}">45</span> min</span>
+                <a class="btn" th:href="@{/hoje(planoId=${plano.id})}">Usar</a>
+            </div>
+        </div>
         <article class="card">
             <p class="meta">Nesta semana: <span th:text="${calisteniaSemana}">0</span>/3 calistenias · <span th:text="${corridaSemana}">0</span>/1 corrida. Séries e cargas são opcionais.</p>
             <form class="quick-form" method="post" th:action="@{/hoje/treino}">
+                <input type="hidden" name="planoId" th:value="${planoSelecionado == null ? '' : planoSelecionado.id}">
                 <div class="field">
                     <label for="tipoTreino">Tipo de sessão</label>
                     <select id="tipoTreino" name="tipo" required>
-                        <option value="CALISTENIA">Calistenia</option>
-                        <option value="CORRIDA">Corrida</option>
+                        <option value="CALISTENIA" th:selected="${planoSelecionado == null or planoSelecionado.tipo == 'CALISTENIA'}">Calistenia</option>
+                        <option value="CORRIDA" th:selected="${planoSelecionado != null and planoSelecionado.tipo == 'CORRIDA'}">Corrida</option>
                     </select>
                 </div>
-                <div class="field">
-                    <label for="exercicios">Exercícios (um por linha) <span class="optional">opcional</span></label>
-                    <textarea id="exercicios" name="exercicios" rows="3" maxlength="4000" placeholder="Flexões&#10;Barra fixa&#10;Agachamento"></textarea>
+                <div class="field exercise-field">
+                    <label>Exercícios e detalhes <span class="optional">opcionais</span></label>
+                    <div class="exercise-entry exercise-head" aria-hidden="true"><span>Exercício</span><span>Séries</span><span>Repetições</span><span>Carga (kg)</span><span></span></div>
+                    <div id="exercise-list" th:if="${#lists.isEmpty(exerciciosPlano)}">
+                        <div class="exercise-entry">
+                            <input type="text" name="exercicios" maxlength="120" placeholder="Flexões" aria-label="Nome do exercício">
+                            <input type="number" name="series" min="1" max="50" placeholder="Opcional" aria-label="Número de séries">
+                            <input type="number" name="repeticoes" min="1" max="1000" placeholder="Opcional" aria-label="Repetições por série">
+                            <input type="number" name="cargas" min="0" max="10000" step="0.01" placeholder="Opcional" aria-label="Carga em quilogramas">
+                            <button type="button" class="btn-outline remove-exercise" aria-label="Remover exercício">×</button>
+                        </div>
+                    </div>
+                    <div id="exercise-list" th:if="${!#lists.isEmpty(exerciciosPlano)}">
+                        <div class="exercise-entry" th:each="exercicioPlano : ${exerciciosPlano}">
+                            <input type="text" name="exercicios" maxlength="120" th:value="${exercicioPlano.nome}" placeholder="Flexões" aria-label="Nome do exercício">
+                            <input type="number" name="series" min="1" max="50" placeholder="Opcional" aria-label="Número de séries">
+                            <input type="number" name="repeticoes" min="1" max="1000" placeholder="Opcional" aria-label="Repetições por série">
+                            <input type="number" name="cargas" min="0" max="10000" step="0.01" placeholder="Opcional" aria-label="Carga em quilogramas">
+                            <button type="button" class="btn-outline remove-exercise" aria-label="Remover exercício">×</button>
+                        </div>
+                    </div>
+                    <button type="button" id="add-exercise" class="btn-outline add-exercise">+ Adicionar exercício</button>
+                    <template id="exercise-template">
+                        <div class="exercise-entry">
+                            <input type="text" name="exercicios" maxlength="120" placeholder="Exercício" aria-label="Nome do exercício">
+                            <input type="number" name="series" min="1" max="50" placeholder="Opcional" aria-label="Número de séries">
+                            <input type="number" name="repeticoes" min="1" max="1000" placeholder="Opcional" aria-label="Repetições por série">
+                            <input type="number" name="cargas" min="0" max="10000" step="0.01" placeholder="Opcional" aria-label="Carga em quilogramas">
+                            <button type="button" class="btn-outline remove-exercise" aria-label="Remover exercício">×</button>
+                        </div>
+                    </template>
                 </div>
                 <div class="field">
                     <label for="observacao">Observação <span class="optional">opcional</span></label>
@@ -126,5 +174,17 @@
         <article class="card mentor-card">“Constância começa pelo que cabe hoje. Registre o que aconteceu; amanhã a gente ajusta.”</article>
     </section>
 </main>
+<script>
+    const exerciseList = document.getElementById('exercise-list');
+    const exerciseTemplate = document.getElementById('exercise-template');
+    document.getElementById('add-exercise').addEventListener('click', () => {
+        exerciseList.appendChild(exerciseTemplate.content.cloneNode(true));
+    });
+    exerciseList.addEventListener('click', (event) => {
+        if (!event.target.classList.contains('remove-exercise')) return;
+        if (exerciseList.querySelectorAll('.exercise-entry').length > 1) event.target.closest('.exercise-entry').remove();
+        else event.target.closest('.exercise-entry').querySelectorAll('input').forEach(input => input.value = '');
+    });
+</script>
 </body>
 </html>
